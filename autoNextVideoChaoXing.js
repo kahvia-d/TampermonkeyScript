@@ -16,15 +16,30 @@ var firstIframeDocument
 var iframes2
 var secondIframe
 var secondIframeDocument
+var secondIframeDocuments = []
 var videoButton
+var videos = []
 var video
-
+var index = -1
 
 function playVideo() {
     var hs = secondIframeDocument.getElementsByClassName('vjs-icon-placeholder')
     let model = document.createElement("button")
     model.click
     hs[0].click()
+}
+
+function nextVideo() {
+    index = index + 1
+    // console.log(videos)
+    // console.log(index)
+    if (videos.length != 0 && index < videos.length) {
+        video = videos[index]
+        secondIframeDocument = secondIframeDocuments[index]
+        //经过反复测试，只能通过模拟点击遮罩去除后，表层的播放按钮，使其自动播放。需要用户在页面加载后手动点击一下空白处，才能使模拟点击生效。
+        console.log("播放第" + index + "个视频")
+        playVideo()
+    }
 }
 
 function tryVideo() {
@@ -47,23 +62,28 @@ function tryVideo() {
                 iframes2 = firstIframeDocument.getElementsByTagName('iframe')
                 if (iframes2 != undefined) {
                     //获取到我们需要的iframe层
-                    secondIframe = iframes2[0]
-                    if (secondIframe != undefined) {
-                        //这个iframe层的文档中查找video
-                        secondIframeDocument = secondIframe.contentDocument
-                        if (secondIframeDocument != undefined) {
-                            video = secondIframeDocument.getElementById('video')
-                            console.log("video:" + video)
-                            if (video != null) {
-                                //通过class标签分析对应作用，started为去除遮罩
-                                topDoc.getElementsByClassName('prev_title')[0].click()
-                                video.className += " vjs-has-started"
-                                // console.log("click")
-                                //经过反复测试，只能通过模拟点击遮罩去除后，表层的播放按钮，使其自动播放。需要用户在页面加载后手动点击一下空白处，才能使模拟点击生效。
-                                playVideo()
+                    for (var i = 0; i < iframes2.length; i++) {
+                        secondIframe = iframes2[i]
+                        if (secondIframe != undefined) {
+                            //这个iframe层的文档中查找video
+                            secondIframeDocument = secondIframe.contentDocument
+                            secondIframeDocuments.push(secondIframeDocument)
+                            if (secondIframeDocument != undefined) {
+                                video = secondIframeDocument.getElementById('video')
+                                // console.log("video:" + video)
+                                if (video != null) {
+                                    videos.push(video)
+                                    //通过class标签分析对应作用，started为去除遮罩
+                                    // topDoc.getElementsByClassName('prev_title')[0].click()
+                                    video.className += " vjs-has-started"
+                                    // console.log("click")
+
+                                }
                             }
                         }
                     }
+                    nextVideo()
+
                 }
             }
         }
@@ -84,29 +104,36 @@ function tryNext() {
             className = video.className;
             //如果在放视频，则检测它播放是否结束
             if (className != null && className.includes('vjs-ended')) {
-                //结束后则从顶级文档中获取下一节按钮，模拟点击
-                let button2 = topDoc.getElementById('prevNextFocusNext');
-                if (button2 != null) {
-                    let tempButton = document.createElement("button")
-                    tempButton.onclick = button2.onclick
-                    tempButton.click()
-                    // console.log(button2)
-                    // console.log(button2.onclick);
+                if (index >= videos.length) {
+                    //结束后则从顶级文档中获取下一节按钮，模拟点击
+                    let button2 = topDoc.getElementById('prevNextFocusNext');
+                    if (button2 != null) {
+                        let tempButton = document.createElement("button")
+                        tempButton.onclick = button2.onclick
+                        tempButton.click()
+                        // console.log(button2)
+                        // console.log(button2.onclick);
+                    }
+                    console.log("播放结束")
+                    //结束这一节时，开启新轮回，判断是否需要播放视频
+                    oneTime()
+                    //清楚当前这个用完了的定时器
+                    clearInterval(checker)
+                } else {
+                    //当前页面还有视频，那就接着放
+                    nextVideo()
                 }
-                console.log("播放结束")
-                //结束这一节时，开启新轮回，判断是否需要播放视频
-                oneTime()
-                //清楚当前这个用完了的定时器
-                clearInterval(checker)
             }
-            if (className != null && className.includes('vjs-paused')) {
+            //视频结束的时候，有时也会被打上暂停的标签，所以最好也判断下暂停时是正常暂停还是视频结束
+            if (className != null && className.includes('vjs-paused') && !className.includes('vjs-ended')) {
                 //检测到暂停了就让它继续播放
+                // console.log("name:" + className)
                 playVideo()
-                console.log("尝试检测题目")
                 var options = secondIframeDocument.getElementsByClassName('tkRadio');
                 var subButton = secondIframeDocument.getElementById('videoquiz-submit');
-                console.log(options);
-                console.log(subButton);
+                if (options.length != 0) {
+                    console.log("检测到" + options.length + "个被嵌入的题目")
+                }
                 try {
                     for (var i = 0; i < options.length; i++) {
                         console.log("尝试选项:" + i)
