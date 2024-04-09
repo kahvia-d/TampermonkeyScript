@@ -4,7 +4,7 @@
 // @version      2024-04-09
 // @description  try to take over the world!
 // @author       You
-// @match        https://changjiang.yuketang.cn/v2/web/studentCards/15826524/2485280/20355099?cid=2661851
+// @match        https://changjiang.yuketang.cn/v2/web/studentCards/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=yuketang.cn
 // @grant        none
 // ==/UserScript==
@@ -19,7 +19,7 @@ function wait(time) {
 
 function watch() {
     //等待时间的单位为毫秒（ms）
-    let waitTime = 4000;
+    let waitTime = 5000;
 
     return new Promise((resolve, reject) => {
         //时间到了以后，返回true，表示 watch 这个过程完成，外部无需继续等待，外部程序继续执行。
