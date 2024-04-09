@@ -42,6 +42,21 @@ function nextVideo() {
     }
 }
 
+function resetAllVar() {
+    topDoc = null;
+    iframes1 = null;
+    firstIframe = null;
+    firstIframeDocument = null;
+    iframes2 = null;
+    secondIframe = null;
+    secondIframeDocument = null;
+    secondIframeDocuments = [];
+    videoButton = null;
+    videos = [];
+    video = null;
+    index = -1;
+}
+
 function tryVideo() {
     //找到顶级文档
     topDoc = document
@@ -115,6 +130,7 @@ function tryNext() {
                         // console.log(button2.onclick);
                     }
                     console.log("播放结束")
+                    resetAllVar()
                     //结束这一节时，开启新轮回，判断是否需要播放视频
                     oneTime()
                     //清楚当前这个用完了的定时器
